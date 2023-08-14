@@ -31,9 +31,8 @@ for i in range(m):
     qe = panda.ik_nr(end  , qi)
 
     traj = rbtx.jtraj(qi, qe, 50)
-    for q in traj.q:
-        panda.plot(q, backend="swift")
-        print('halo')
+    panda.plot(traj)
+    print('halo')
 
 
     
