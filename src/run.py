@@ -27,12 +27,13 @@ for i in range(m):
     rpy   = spm.SO3.RPY(end_rpy[i,0], end_rpy[i,1], end_rpy[i,2])
     end   = spm.SE3(rpy.A, end_points[i,:])
     
-    qi = panda.ik_nr(start, panda.qn)
+    qi = panda.ik_nr(start, np.zeros(7))
     qe = panda.ik_nr(end  , qi)
 
     traj = rbtx.jtraj(qi, qe, 50)
     for q in traj.q:
         panda.plot(q, backend="swift")
+        print('halo')
 
 
     
