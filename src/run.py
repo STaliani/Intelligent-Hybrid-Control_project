@@ -1,38 +1,34 @@
 import numpy as np
-#from sklearn.gaussian_process import GaussianProcessRegressor
 from robot import Robot
-import roboticstoolbox as rbtx
-import spatialmath as spm
-#import trajectories as traj
+import trajectories
+import matplotlib.pyplot as plt
 
-## Create robot with its model ##
-#rbt = Robot(l1= 1, l2=1, m1=1, m2=1)
-panda = rbtx.models.DH.Panda()
+# initialize a 2R planar robot
+rbt = Robot(1.,1.)
 
-#print(panda.dynamics)
+# initialize initial and final position for the robot
+start_points = np.array([[0.1, 0.2], [1., 0.], [ 0.5, 0.5], [-1.1, 0.2], [0.8, -0.2]]).transpose()
+end_points   = np.array([[0.2, 0. ], [0., 1.], [-0.5, 1.3], [-0.3,-1.1], [0.1, -0.7]]).transpose()
 
+_, n = start_points.shape
 
-## crate trajectories ##
-# Create the start and end points
-start_points = np.array([[0., 1., 0.], [1., 0., 1.], [ 0.5, 0.5, 0.5], [-0.1, 0.2, 0.3], [0.2, -0.2, 0.2]])
-start_rpy    = np.array([[0., 0., 0.], [0., np.pi/2, 0.], [ np.pi/4, 0., 0.], [np.pi/2, np.pi/4, 0.], [np.pi/4, np.pi/3, np.pi/6]])
-end_points   = np.array([[1., 0., 1.], [0., 1., 0.], [-0.5, 0.5, 0.5], [-0.3,-0.1, 0.5], [0.1, -0.1, 0.2]])
-end_rpy      = np.array([[0., 0., 0.], [0., np.pi/2, 0.], [ np.pi/4, 0., 0.], [np.pi/2, np.pi/4, 0.], [np.pi/4, np.pi/3, np.pi/6]])
+for point in range(n):
+    start_q = rbt.inverseKinimatics(start_points[0,point], start_points[1,point])
+    end_q = rbt.inverseKinimatics(end_points[0,point], end_points[1,point])
+    traj = trajectories.createTrajectory(start_q, end_q, 5, 0.1)
+    _, N = traj.shape
+    required_torque = np.zeros((2,N))
+    for i in range(N): 
+        required_torque[:,i:i+1] = rbt.forward_dynamics(traj[:2,i:i+1], traj[2:4,i:i+1], traj[4:6,i:i+1])
 
-m, _ = start_points.shape
+    plt.figure(str(point))
+    plt.plot(np.rad2deg(traj[0,:]))
+    plt.plot(np.rad2deg(traj[1,:]))
+    plt.grid()
+    title = "torque profile " + str(point)
+    plt.figure(title)
+    plt.plot(required_torque[0,:])
+    plt.plot(required_torque[1,:])
+    plt.grid()
 
-for i in range(m): 
-    rpy   = spm.SO3.RPY(start_rpy[i,0], start_rpy[i,1], start_rpy[i,2])
-    start = spm.SE3(rpy.A, start_points[i,:])
-    rpy   = spm.SO3.RPY(end_rpy[i,0], end_rpy[i,1], end_rpy[i,2])
-    end   = spm.SE3(rpy.A, end_points[i,:])
-    
-    qi = panda.ik_nr(start, np.zeros(7))
-    qe = panda.ik_nr(end  , qi)
-
-    traj = rbtx.jtraj(qi, qe, 50)
-    panda.plot(traj)
-    print('halo')
-
-
-    
+#plt.show()
