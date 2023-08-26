@@ -35,7 +35,7 @@ class Robot:
         self.q1 = alpha - beta
         return np.array([self.q1, self.q2]).reshape(2,1)
         
-    def forward_dynamics(self, q, dq, ddq):
+    def forward_dynamics(self, q, dq, ddq, external_force = np.zeros((2,1)))->np.ndarray:
         m1 = self.m1
         m2 = self.m2
         l1 = self.l1
@@ -45,9 +45,6 @@ class Robot:
         I1 = self.I1
         I2 = self.I2
         
-        print(q1, q2)
-        
-        
         M = np.array([[m1*l1**2 + I1 + m2*((l1/2)**2 + l2**2 + 2*(l1/2)*l2*np.cos(q2)) + l2, m2*(l2**2 + (l1/2)*l2*np.cos(q2))+l2],
                       [m2*(l2**2 + (l1/2)*l2*np.cos(q2)+l2)                                , m2*l2**2 + I2                       ]])
         C = np.array([[-m2*(l1/2)*l2*np.sin(q2)*dq[0,0], -m2*(l1/2)*l2*np.sin(q2)*(dq[0,0]+ dq[1,0])],
@@ -55,10 +52,19 @@ class Robot:
         G = np.array([[(m1*l1 + m2*(l1/2))*self.g*np.cos(q1) + m2*self.g*l2*np.cos(q1+q2)],
                       [m2*self.g*l2*np.cos(q1+q2)                                        ]])
         
-        tau = M@ddq + C@dq + G
+        external_force_compensation = self.jacobian(q).T@external_force
+        
+        tau = M@ddq + C@dq + G - external_force_compensation
         
         return tau
     
+    def jacobian(self,q):
+        if q.shape != (2,1):
+            q.reshape(2,1)
+        J = np.array([[-self.l1*np.sin(q[0,0]) - self.l2*np.sin(q[0,0]+q[1,0]), -self.l2*np.sin(q[0,0]+q[1,0])] , 
+                      [ self.l1*np.cos(q[0,0]) + self.l2*np.cos(q[0,0]+q[1,0]),  self.l2*np.cos(q[0,0]+q[1,0])]])
+        
+        return J
     
     
     
