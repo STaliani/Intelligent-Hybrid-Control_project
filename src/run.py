@@ -2,8 +2,9 @@ import numpy as np
 from robot import Robot
 import trajectories
 import matplotlib.pyplot as plt
-from dmd import DMD, DMD4cast
-from create_dataset import dataset_builder
+import dmd
+from dataset_builder import create_dataset
+import gpr
 
 # Decide the number of data points
 N_samples = 5
@@ -16,25 +17,31 @@ execution_time = np.array([5., 5., 5., 5., 5.])
 # initialize a 2R planar robot
 rbt = Robot(1.,1.)
 
-# create the dataset
-dataset = dataset_builder(rbt, start_points, end_points, execution_time, N_samples)
-
-print(dataset.keys())
+# create the dataset, ground truth + noise, first row is the ground truth 
+dataset = create_dataset(rbt, start_points, end_points, execution_time, N_samples)
+# Initialize the Gaussian Process Regressor
+regressor = gpr.GPR(kernel= None)
+# Train the regressor
+regressor.train_regressor(dataset["traj_0"])
 
 for key in dataset.keys():
     plt.figure("Torques "+  key)
-    plt.plot(dataset[key][0,:], 'o')
-    plt.plot(dataset[key][1,:], 'o')
+    #plot the ground truth
+    plt.plot(dataset[key][0,:], 'b') 
+    plt.plot(dataset[key][1,:], 'orange') 
+    # plot the noisy data
+    plt.plot(dataset[key][2,:], 'ob') 
+    plt.plot(dataset[key][3,:], 'o', color='orange')
     plt.xlabel("Time")
     plt.ylabel("Torque")
     plt.legend(["Joint 1", "Joint 2"])
     plt.grid()
     
-    #pred_step = 2
-    #next_tau = DMD4cast(dataset[key], 2, pred_step)
-    #print(next_tau.shape)
-    A_tilde, Phi, A = DMD(dataset[key], 2)
-    #print("A_tilde:\n", A_tilde, "\nPhi:\n", Phi, "\nA:\n",A)
-    print("A_tilde: ", A_tilde.shape, "\nPhi: ", Phi.shape, "\nA: ",A.shape)
+    data = regressor.extract_evolution_from_measure(dataset[key][2:4,:])
+    
+    pred_step = 2
+    next_tau = dmd.DMD4cast(dataset[key], 1, pred_step)
+    
+    
     
 #plt.show()
