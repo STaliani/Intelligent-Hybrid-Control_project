@@ -3,7 +3,7 @@ import numpy as np
 class Robot:
     
     g = 9.81
-    def __init__(self, l1:float, l2:float, q1:float=0, q2:float=0, m1:float=0.5, m2:float=0.5):
+    def __init__(self, l1:float, l2:float, q1:float=0, q2:float=0, m1:float=0.5, m2:float=0.5, dt:float=0.01):
         self.q1 = q1 
         self.q2 = q2
         self.l1 = l1
@@ -12,6 +12,7 @@ class Robot:
         self.m2 = m2
         self.I1 = 0.5*m1*l1**2
         self.I2 = 0.5*m2*l2**2
+        self.dt = dt
         self.forwardKinematics()
         
     
@@ -57,6 +58,40 @@ class Robot:
         tau = M@ddq + C@dq + G - external_force_compensation
         
         return tau
+    
+    def inverse_dynamics(self, q_init: np.ndarray, dq_init: np.ndarray, tau:np.ndarray, external_force = np.zeros((2,1)))->np.ndarray:
+        m1 = self.m1
+        m2 = self.m2
+        l1 = self.l1
+        l2 = self.l2
+        I1 = self.I1
+        I2 = self.I2
+        
+        _, N = tau.shape
+        q = np.zeros((2,N))
+        dq = np.zeros((2,N))
+        ddq = np.zeros((2,N))
+        q[:,0] = q_init[:,0]
+        dq[:,0] = dq_init[:,0]
+        for i in range(N-1):
+            q1 = q[0,i]
+            q2 = q[1,i]
+            dq1 = dq[0,i]
+            dq2 = dq[1,i]
+            
+            M = np.array([[m1*l1**2 + I1 + m2*((l1/2)**2 + l2**2 + 2*(l1/2)*l2*np.cos(q2)) + l2, m2*(l2**2 + (l1/2)*l2*np.cos(q2))+l2],
+                          [m2*(l2**2 + (l1/2)*l2*np.cos(q2)+l2)                                , m2*l2**2 + I2                       ]])
+            C = np.array([[-m2*(l1/2)*l2*np.sin(q2)*dq1, -m2*(l1/2)*l2*np.sin(q2)*(dq1+ dq2)],
+                          [ m2*(l1/2)*l2*np.sin(q2)*dq2,  0                                     ]])
+            G = np.array([[(m1*l1 + m2*(l1/2))*self.g*np.cos(q1) + m2*self.g*l2*np.cos(q1+q2)],
+                          [m2*self.g*l2*np.cos(q1+q2)                                        ]])
+            
+            ddq[:,i] = np.linalg.inv(M)@(tau[:,i] - C@dq[:,i] - G + external_force)
+            dq[:,i+1] = dq[:,i] + ddq[:,i]*self.dt
+            q[:,i+1] = q[:,i] + dq[:,i]*self.dt + 0.5*ddq[:,i]*self.dt**2
+        
+        return q, dq, ddq
+        
     
     def jacobian(self,q):
         if q.shape != (2,1):
