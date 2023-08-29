@@ -19,10 +19,6 @@ rbt = Robot(1.,1.)
 
 # create the dataset, ground truth + noise, first row is the ground truth 
 dataset = create_dataset(rbt, start_points, end_points, execution_time, N_samples)
-# Initialize the Gaussian Process Regressor
-regressor = gpr.GPR(kernel= None)
-# Train the regressor
-regressor.train_regressor(dataset["traj_0"])
 
 for key in dataset.keys():
     plt.figure("Torques "+  key)
@@ -37,11 +33,11 @@ for key in dataset.keys():
     plt.legend(["Joint 1", "Joint 2"])
     plt.grid()
     
-    data = regressor.extract_evolution_from_measure(dataset[key][2:4,:])
+    #data = regressor.extract_evolution_from_measure(dataset[key][2:4,:])
     
-    pred_step = 2
-    next_tau = dmd.DMD4cast(dataset[key], 1, pred_step)
+    #pred_step = 2
+    #next_tau = dmd.DMD4cast(dataset[key], 1, pred_step)
     
     
     
-#plt.show()
+plt.show()

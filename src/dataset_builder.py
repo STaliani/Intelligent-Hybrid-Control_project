@@ -18,9 +18,13 @@ def create_dataset(rbt: Robot, start_points:np.ndarray, end_points:np.ndarray, e
         i = 0
         for sample in range(N_samples+1):
             if sample == 0:
-                data[i:i+2,:] = required_torque #insert the ground truth at the first row
+                #data[i:i+2,:] = required_torque #insert the ground truth at the first row
+                data[i:i+2,:] = rbt.forwardKinematics(traj[:2,:]) #insert the ground truth at the first row
             else:     
-                data[i:i+2,:] = required_torque + np.random.normal(0, noise_level, (2,N))
+                #data[i:i+2,:] = required_torque + np.random.normal(0, noise_level, (2,N))
+                measured_torque = required_torque + np.random.normal(0, noise_level, (2,N))
+                q, _, _ = rbt.inverse_dynamics(traj[:2,0:1], traj[2:4,0:1], measured_torque)
+                data[i:i+2,:] = rbt.forwardKinematics(q)
             i += 2
             
             

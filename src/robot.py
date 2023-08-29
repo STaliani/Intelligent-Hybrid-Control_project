@@ -16,9 +16,16 @@ class Robot:
         self.forwardKinematics()
         
     
-    def forwardKinematics(self)->None:
-        self.x = self.l1*np.cos(self.q1) + self.l2*np.cos(self.q1 + self.q2)
-        self.y = self.l1*np.sin(self.q1) + self.l2*np.sin(self.q1 + self.q2)
+    def forwardKinematics(self, q:np.ndarray=None)->np.ndarray:
+        if q is None:
+            self.x = self.l1*np.cos(self.q1) + self.l2*np.cos(self.q1 + self.q2)
+            self.y = self.l1*np.sin(self.q1) + self.l2*np.sin(self.q1 + self.q2)
+        else:
+            pos = np.zeros((2,q.shape[1]))
+            for i in range(q.shape[1]):
+                pos[0,i] = self.l1*np.cos(q[0,i]) + self.l2*np.cos(q[0,i] + q[1,i])
+                pos[1,i] = self.l1*np.sin(q[0,i]) + self.l2*np.sin(q[0,i] + q[1,i])    
+            return pos
         
     def inverseKinimatics(self, x:float = None, y:float= None)->np.ndarray:
         if x == None and y==None:
@@ -86,7 +93,7 @@ class Robot:
             G = np.array([[(m1*l1 + m2*(l1/2))*self.g*np.cos(q1) + m2*self.g*l2*np.cos(q1+q2)],
                           [m2*self.g*l2*np.cos(q1+q2)                                        ]])
             
-            ddq[:,i] = np.linalg.inv(M)@(tau[:,i] - C@dq[:,i] - G + external_force)
+            ddq[:,i:i+1] = np.linalg.inv(M)@(tau[:,i:i+1] - C@dq[:,i:i+1] - G + external_force)
             dq[:,i+1] = dq[:,i] + ddq[:,i]*self.dt
             q[:,i+1] = q[:,i] + dq[:,i]*self.dt + 0.5*ddq[:,i]*self.dt**2
         
