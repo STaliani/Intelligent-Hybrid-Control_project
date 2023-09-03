@@ -3,7 +3,7 @@ import numpy as np
 class Robot:
     
     g = 9.81
-    def __init__(self, l1:float, l2:float, q1:float=0, q2:float=0, m1:float=0.5, m2:float=0.5, dt:float=0.01):
+    def __init__(self, l1:float, l2:float, q1:float=0, q2:float=0, m1:float=0.5, m2:float=0.5, dt:float=0.1):
         self.q1 = q1 
         self.q2 = q2
         self.l1 = l1
@@ -14,6 +14,7 @@ class Robot:
         self.I2 = 0.5*m2*l2**2
         self.dt = dt
         self.forwardKinematics()
+        print("Robot created")
         
     
     def forwardKinematics(self, q:np.ndarray=None)->np.ndarray:
@@ -75,16 +76,19 @@ class Robot:
         I2 = self.I2
         
         _, N = tau.shape
-        q = np.zeros((2,N))
-        dq = np.zeros((2,N))
-        ddq = np.zeros((2,N))
+        q = np.zeros((2,N+1))
+        dq = np.zeros((2,N+1))
+        ddq = np.zeros((2,N+1))
         q[:,0] = q_init[:,0]
         dq[:,0] = dq_init[:,0]
-        for i in range(N-1):
+        for i in range(N):
             q1 = q[0,i]
             q2 = q[1,i]
             dq1 = dq[0,i]
             dq2 = dq[1,i]
+            
+            print("dq1: ", dq1)
+            print("dq2: ", dq2)
             
             M = np.array([[m1*l1**2 + I1 + m2*((l1/2)**2 + l2**2 + 2*(l1/2)*l2*np.cos(q2)) + l2, m2*(l2**2 + (l1/2)*l2*np.cos(q2))+l2],
                           [m2*(l2**2 + (l1/2)*l2*np.cos(q2)+l2)                                , m2*l2**2 + I2                       ]])
@@ -93,6 +97,9 @@ class Robot:
             G = np.array([[(m1*l1 + m2*(l1/2))*self.g*np.cos(q1) + m2*self.g*l2*np.cos(q1+q2)],
                           [m2*self.g*l2*np.cos(q1+q2)                                        ]])
             
+            print("M: \n", M)
+            print("C: \n", C)
+            print("G: \n", G)
             ddq[:,i:i+1] = np.linalg.inv(M)@(tau[:,i:i+1] - C@dq[:,i:i+1] - G + external_force)
             dq[:,i+1] = dq[:,i] + ddq[:,i]*self.dt
             q[:,i+1] = q[:,i] + dq[:,i]*self.dt + 0.5*ddq[:,i]*self.dt**2
@@ -109,4 +116,10 @@ class Robot:
         return J
     
     
+if __name__ == '__main__':
     
+    rbt = Robot(1.,1.)
+    
+    q, dq, ddq = rbt.inverse_dynamics(np.array([[0.1],[0.2]]).reshape(2,1), np.array([[1.],[1.]]).reshape(2,1), np.array([[1.],[1.]]).reshape(2,1))
+    
+    print(q)
