@@ -1,7 +1,7 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
 class Robot:
-    
+
     g = 9.81
     def __init__(self, l1:float, l2:float, q1:float=0, q2:float=0, m1:float=0.5, m2:float=0.5, dt:float=0.1):
         self.q1 = q1 
@@ -16,7 +16,6 @@ class Robot:
         self.forwardKinematics()
         print("Robot created")
         
-    
     def forwardKinematics(self, q:np.ndarray=None)->np.ndarray:
         if q is None:
             self.x = self.l1*np.cos(self.q1) + self.l2*np.cos(self.q1 + self.q2)
@@ -36,11 +35,11 @@ class Robot:
         if c2 > 1:
             raise Exception("The point is out of the workspace")
         s2 = np.sqrt(1 - c2**2)
-        self.q2 = np.arctan2(c2,s2)
-        alpha = np.arctan2(x**2, y**2)
+        self.q2 = np.arctan2(s2,c2)
+        alpha = np.arctan2(y, x)
         c_beta = self.l1 + self.l2*c2
         s_beta = self.l2*s2
-        beta = np.arctan2(c_beta,s_beta)
+        beta = np.arctan2(s_beta,c_beta)
         self.q1 = alpha - beta
         return np.array([self.q1, self.q2]).reshape(2,1)
         
@@ -105,7 +104,6 @@ class Robot:
             q[:,i+1] = q[:,i] + dq[:,i]*self.dt + 0.5*ddq[:,i]*self.dt**2
         
         return q, dq, ddq
-        
     
     def jacobian(self,q):
         if q.shape != (2,1):
@@ -115,11 +113,41 @@ class Robot:
         
         return J
     
+    def plot_robot(self, q:np.ndarray=None):
+        if q is None:
+            self.forwardKinematics()
+            q = np.array([self.q1, self.q2]).reshape(2,1)
+        
+        x1 = round(self.l1*np.cos(q[0,0]),2)
+        y1 = round(self.l1*np.sin(q[0,0]),2)
+        x2 = x1 + round(self.l2*np.cos(q[0,0]+q[1,0]),2)
+        y2 = y1 + round(self.l2*np.sin(q[0,0]+q[1,0]),2)
+        print("x1, x2: ", x1, x2)
+        print("y1, y2: ", y1, y2)
+        lx1 = [0]
+        ly1 = [0]
+        lx2 = [x1]
+        ly2 = [y1]
+        for i in range(11):
+            lx1.append(x1/10*i)
+            ly1.append(y1/10*i)
+            lx2.append(x1 + (x2-x1)/10*i)
+            ly2.append(y1 + (y2-y1)/10*i)
+        plt.figure("Robot")
+        plt.plot(lx1, ly1, 'r')
+        plt.plot(lx2, ly2, 'b')
+        #plt.quiver(0, 0, x1, y1, colour='r', linewidths=2)
+        #plt.quiver(x1, y1, x2, y2, colour='b', linewidths=2)
+        plt.plot(x2, y2, 'o')
+        plt.xlabel("x [dm]")
+        plt.ylabel("y [dm]")
+        plt.xlim(-2,2)
+        plt.ylim(-2,2)
+        plt.grid()
+        plt.show()
     
 if __name__ == '__main__':
     
     rbt = Robot(1.,1.)
+    rbt.plot_robot()
     
-    q, dq, ddq = rbt.inverse_dynamics(np.array([[0.1],[0.2]]).reshape(2,1), np.array([[1.],[1.]]).reshape(2,1), np.array([[1.],[1.]]).reshape(2,1))
-    
-    print(q)
