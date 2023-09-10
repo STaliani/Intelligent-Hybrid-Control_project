@@ -1,5 +1,5 @@
-import trajectories
-from robot import Robot
+import dmd_perturbation_detection.trajectories as trajectories
+from dmd_perturbation_detection.robot import Robot
 import numpy as np
 import matplotlib.pyplot as plt
 

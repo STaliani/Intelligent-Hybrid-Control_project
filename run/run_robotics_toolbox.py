@@ -1,10 +1,10 @@
 import numpy as np
 #from sklearn.gaussian_process import GaussianProcessRegressor
-from robot import Robot
+from dmd_perturbation_detection.robot import Robot
 import roboticstoolbox as rbtx
 import spatialmath as spm
 import time
-#import trajectories as traj
+#from dmd_perturbation_detection import trajectories
 import swift
 ## Create robot with its model ##
 #rbt = Robot(l1= 1, l2=1, m1=1, m2=1)

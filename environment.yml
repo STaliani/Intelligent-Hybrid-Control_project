@@ -1,0 +1,14 @@
+name: ihc_project
+channels:
+  - conda-forge
+
+dependencies:
+  - python>=3.7
+  - pip
+
+pip: 
+  - numpy
+  - sympy
+  - matplotlib
+  - scikit-learn
+  - robotics-toolbox-python

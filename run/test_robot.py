@@ -1,4 +1,4 @@
-from robot import Robot
+from dmd_perturbation_detection.robot import Robot
 import numpy as np
 
 rbt = Robot(1.,1.)

@@ -1,10 +1,8 @@
 import numpy as np
-from robot import Robot
-import trajectories
 import matplotlib.pyplot as plt
-import dmd_class
-from dataset_builder import create_dataset
-import gpr
+from dmd_perturbation_detection.dataset_builder import create_dataset
+from dmd_perturbation_detection.robot import Robot
+from dmd_perturbation_detection import dmd_class, trajectories, gpr
 
 # Decide the number of data points
 N_samples = 5

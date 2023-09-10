@@ -1,0 +1,17 @@
+.gitignore
+EstimationRobotPerturbations.pdf
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+src/dmd_perturbation_detection/__init__.py
+src/dmd_perturbation_detection/dataset_builder.py
+src/dmd_perturbation_detection/dmd_class.py
+src/dmd_perturbation_detection/gpr.py
+src/dmd_perturbation_detection/robot.py
+src/dmd_perturbation_detection/trajectories.py
+src/dmd_perturbation_detection.egg-info/PKG-INFO
+src/dmd_perturbation_detection.egg-info/SOURCES.txt
+src/dmd_perturbation_detection.egg-info/dependency_links.txt
+src/dmd_perturbation_detection.egg-info/requires.txt
+src/dmd_perturbation_detection.egg-info/top_level.txt
