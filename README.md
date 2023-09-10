@@ -9,7 +9,9 @@ This project was realized to complete the exam of Intelligent & Hybrid control, 
 To execute the code follow the following istructions 
 
 - First install the repository
-`https://github.com/STaliani/Intelligent-Hybrid_Control.git`
+```
+git clone https://github.com/STaliani/Intelligent-Hybrid_Control.git
+```
 
 - Then create and activate the environment
 ```
@@ -20,4 +22,6 @@ conda activate ihc_project
 pip install .
 ```
 - Last run the python script
-`python run/run.py`
+```
+python run/run.py
+```
