@@ -69,7 +69,7 @@ for key in dataset.keys():
             b = error <= -np.ones((2,1))*0.2
             #print('b',b)
             if (a[0] or a[1]) or (b[0] or b[1]):
-                print(f"anomaly detected at sample {sample} and time {i}")
+                #print(f"anomaly detected at sample {sample} and time {i}")
                 if disturbance_ground_truth[key][sample,i] == 1:
                     score += 1
                     confusion['TP'] += 1
@@ -82,8 +82,8 @@ for key in dataset.keys():
                 else:
                     confusion['FN'] += 1
                     
-        print(f"Score {score}")
-        print(f"Score for sample {sample} is {score/(N-1)}")
+        #print(f"Score {score}")
+        #print(f"Score for sample {sample} is {score/(N-1)}")
         scores.append(score/(N-1))
         
     conf_matrix = np.array([[confusion['TP'], confusion['FP']], [confusion['FN'], confusion['TN']]])

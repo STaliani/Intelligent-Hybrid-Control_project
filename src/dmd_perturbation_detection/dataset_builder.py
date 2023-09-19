@@ -27,7 +27,7 @@ def create_dataset(rbt: Robot, start_points:np.ndarray, end_points:np.ndarray, e
         for sample in range(N_samples+1):
             if sample == 0:
                 data[i:i+2,:] = copy.deepcopy(required_torque) #insert the ground truth at the first row
-                print(data[i:i+2,:].shape)
+                
             else:     
                 data[i:i+2,:] = required_torque + np.random.normal(0, noise_level, (2,N))
                 if sample == 2 :
@@ -44,7 +44,7 @@ def create_dataset(rbt: Robot, start_points:np.ndarray, end_points:np.ndarray, e
                 #print(f"I'm here point, {point}, sample {sample}, disturbance time {disturbance_time}")  
                 for j in range(disturbance_time, disturbance_time+20):
                     dist =rbt.forward_dynamics(traj[:2,j:j+1], traj[2:4,j:j+1], traj[4:6,j:j+1], ext_force)
-                    print(f"dist {dist.transpose()}")
+                    #print(f"dist {dist.transpose()}")
                     data[i:i+2,j:j+1] = dist
                     if ext_force[0,0] != 0 or ext_force[1,0] != 0:
                         dist_bool[sample, j:j+1] = 1
