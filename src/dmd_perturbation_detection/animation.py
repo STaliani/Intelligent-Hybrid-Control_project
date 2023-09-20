@@ -38,7 +38,7 @@ def update(i):
     plt.draw()
     
     
-def animate(my_rbt:Robot, q_ref:np.ndarray, measured_disturbance:np.ndarray, force: np.array, dt:float, N_samples:int)->FuncAnimation:
+def animate(my_rbt:Robot, q_ref:np.ndarray, measured_disturbance:np.ndarray, force: np.array)->FuncAnimation:
     global ax, rbt, q, disturbance, f
     f = force
     disturbance = measured_disturbance

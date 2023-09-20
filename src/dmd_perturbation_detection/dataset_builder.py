@@ -3,10 +3,12 @@ from dmd_perturbation_detection.robot import Robot
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
+import dmd_perturbation_detection.animation as animation
 
 def create_dataset(rbt: Robot, start_points:np.ndarray, end_points:np.ndarray, execution_time:np.ndarray, N_samples:int, noise_level:float = 0.1)->dict:
     _, n = start_points.shape
     dataset = dict.fromkeys(["traj_" + str(key) for key in range(N_samples)])
+    trajectory = dict.fromkeys(["traj_" + str(key) for key in range(N_samples)])
     disturbance_ground_truth = dict.fromkeys(["traj_" + str(key) for key in range(N_samples)])
     force_ground_truth = dict.fromkeys(["traj_" + str(key) for key in range(N_samples)])
     for key in force_ground_truth.keys():
@@ -16,7 +18,7 @@ def create_dataset(rbt: Robot, start_points:np.ndarray, end_points:np.ndarray, e
         start_q = rbt.inverseKinimatics(start_points[0,point], start_points[1,point])
         end_q = rbt.inverseKinimatics(end_points[0,point], end_points[1,point])
         traj = trajectories.createTrajectory(start_q, end_q, execution_time[point], 0.1)
-
+        trajectory["traj_" + str(point)] = traj
         # compute the required torque
         _, N = traj.shape
         required_torque = np.zeros((2,N))
@@ -60,7 +62,7 @@ def create_dataset(rbt: Robot, start_points:np.ndarray, end_points:np.ndarray, e
             dataset["traj_" + str(point)] = data
             i += 2
             
-    return dataset, disturbance_ground_truth, force_ground_truth
+    return dataset, disturbance_ground_truth, force_ground_truth, trajectory
 
 if __name__ == 'main':
     

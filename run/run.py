@@ -17,7 +17,7 @@ execution_time = np.array([10., 10., 10., 10., 10.])
 rbt = Robot(1.,1.)
 dmd = dmd_class.DMD()
 # create the dataset, ground truth + noise, first row is the ground truth 
-dataset, disturbance_ground_truth, ext_force = create_dataset(rbt, start_points, end_points, execution_time, N_samples)
+dataset, disturbance_ground_truth, ext_force, traj = create_dataset(rbt, start_points, end_points, execution_time, N_samples)
 detected_dist = dict.fromkeys(["traj_" + str(key) for key in range(N_samples)])
 for key in dataset.keys():
     plt.figure("Torques "+  key)
@@ -84,11 +84,11 @@ for key in dataset.keys():
                     confusion['TN'] += 1
                 else:
                     confusion['FN'] += 1
-        #print(f"Score {score}")
-        #print(f"Score for sample {sample} is {score/(N-1)}")
+
         scores.append(score/(N-1))
-        animation = animate(rbt, dataset[key][0:2,:], detection[sample-1,:], ext_force[key][sample-1,:], 0.1, N)
-    
+        animation = animate(rbt, traj[key], detection[sample-1,:], ext_force[key][sample-1,:])
+
+    #animation.save(f"animations/animation_{key}.gif", writer='imagemagick', fps=10)
     detected_dist[key] = detection      
     conf_matrix = np.array([[confusion['TP'], confusion['FP']], [confusion['FN'], confusion['TN']]])
     fig, ax = plt.subplots(figsize=(7.5, 7.5))
@@ -97,9 +97,11 @@ for key in dataset.keys():
         for j in range(conf_matrix.shape[1]):
             ax.text(x=j, y=i,s=conf_matrix[i, j], va='center', ha='center', size='xx-large')
         
+    
     plt.xlabel('Predictions', fontsize=18)
     plt.ylabel('Actuals', fontsize=18)
     plt.title('Confusion Matrix', fontsize=18)
+    fig.savefig(f"animations/Confusion Matrix {key}")
     
     scores = np.array(scores)
     plt.figure("Prediction")
@@ -107,5 +109,5 @@ for key in dataset.keys():
     plt.xlabel("sample")
     plt.ylabel("Probability")    
     plt.grid()
-    
+    plt.savefig(f"animations/Prediction {key}")
     plt.show()
