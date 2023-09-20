@@ -101,7 +101,7 @@ for key in dataset.keys():
     plt.xlabel('Predictions', fontsize=18)
     plt.ylabel('Actuals', fontsize=18)
     plt.title('Confusion Matrix', fontsize=18)
-    fig.savefig(f"animations/Confusion Matrix {key}")
+    #fig.savefig(f"animations/Confusion Matrix {key}")
     
     scores = np.array(scores)
     plt.figure("Prediction")
@@ -109,5 +109,5 @@ for key in dataset.keys():
     plt.xlabel("sample")
     plt.ylabel("Probability")    
     plt.grid()
-    plt.savefig(f"animations/Prediction {key}")
+    #plt.savefig(f"animations/Prediction {key}")
     plt.show()
