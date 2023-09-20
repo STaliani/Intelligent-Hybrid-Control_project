@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from dmd_perturbation_detection.dataset_builder import create_dataset
 from dmd_perturbation_detection.robot import Robot
 from dmd_perturbation_detection import dmd_class, trajectories, gpr
+from dmd_perturbation_detection.animation import animate
 
 # Decide the number of data points
 N_samples = 5
@@ -16,8 +17,8 @@ execution_time = np.array([10., 10., 10., 10., 10.])
 rbt = Robot(1.,1.)
 dmd = dmd_class.DMD()
 # create the dataset, ground truth + noise, first row is the ground truth 
-dataset, disturbance_ground_truth = create_dataset(rbt, start_points, end_points, execution_time, N_samples)
-
+dataset, disturbance_ground_truth, ext_force = create_dataset(rbt, start_points, end_points, execution_time, N_samples)
+detected_dist = dict.fromkeys(["traj_" + str(key) for key in range(N_samples)])
 for key in dataset.keys():
     plt.figure("Torques "+  key)
     #plot the ground truth
@@ -54,7 +55,8 @@ for key in dataset.keys():
     for entry in confusion.keys():
         confusion[entry] = 0
     A_tilde, Phi, A = dmd.dmd(dataset[key][:2,:], 2)
-    for sample in range(0,N_samples+1):
+    detection = np.zeros((N_samples,dataset[key].shape[1]))
+    for sample in range(1,N_samples+1):
         N = dataset[key].shape[1]
         prediction = np.zeros((2,N))
         prediction[:,0] = dataset[key][:2,0]
@@ -69,6 +71,7 @@ for key in dataset.keys():
             b = error <= -np.ones((2,1))*0.2
             #print('b',b)
             if (a[0] or a[1]) or (b[0] or b[1]):
+                detection[sample-1,i] = 1
                 #print(f"anomaly detected at sample {sample} and time {i}")
                 if disturbance_ground_truth[key][sample,i] == 1:
                     score += 1
@@ -81,11 +84,12 @@ for key in dataset.keys():
                     confusion['TN'] += 1
                 else:
                     confusion['FN'] += 1
-                    
         #print(f"Score {score}")
         #print(f"Score for sample {sample} is {score/(N-1)}")
         scores.append(score/(N-1))
-        
+        animation = animate(rbt, dataset[key][0:2,:], detection[sample-1,:], ext_force[key][sample-1,:], 0.1, N)
+    
+    detected_dist[key] = detection      
     conf_matrix = np.array([[confusion['TP'], confusion['FP']], [confusion['FN'], confusion['TN']]])
     fig, ax = plt.subplots(figsize=(7.5, 7.5))
     ax.matshow(conf_matrix, cmap=plt.cm.Blues, alpha=0.3)
@@ -99,7 +103,7 @@ for key in dataset.keys():
     
     scores = np.array(scores)
     plt.figure("Prediction")
-    plt.bar(list(range(6)),scores)
+    plt.bar(list(range(5)),scores)
     plt.xlabel("sample")
     plt.ylabel("Probability")    
     plt.grid()

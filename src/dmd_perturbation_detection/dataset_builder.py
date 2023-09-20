@@ -8,6 +8,9 @@ def create_dataset(rbt: Robot, start_points:np.ndarray, end_points:np.ndarray, e
     _, n = start_points.shape
     dataset = dict.fromkeys(["traj_" + str(key) for key in range(N_samples)])
     disturbance_ground_truth = dict.fromkeys(["traj_" + str(key) for key in range(N_samples)])
+    force_ground_truth = dict.fromkeys(["traj_" + str(key) for key in range(N_samples)])
+    for key in force_ground_truth.keys():
+        force_ground_truth[key] = np.zeros((5,3))
     for point in range(n):
         # create the trajectory
         start_q = rbt.inverseKinimatics(start_points[0,point], start_points[1,point])
@@ -24,6 +27,7 @@ def create_dataset(rbt: Robot, start_points:np.ndarray, end_points:np.ndarray, e
         data = np.zeros((2*(N_samples+1), N))
         dist_bool = np.zeros((N_samples+1, N))
         i = 0
+        
         for sample in range(N_samples+1):
             if sample == 0:
                 data[i:i+2,:] = copy.deepcopy(required_torque) #insert the ground truth at the first row
@@ -41,8 +45,10 @@ def create_dataset(rbt: Robot, start_points:np.ndarray, end_points:np.ndarray, e
                 
                   
                 disturbance_time = np.random.randint(low=0, high=N-20)
+                force_ground_truth["traj_"+str(point)][sample-1,:] = np.array([ext_force[0,0], ext_force[1,0], disturbance_time])
                 #print(f"I'm here point, {point}, sample {sample}, disturbance time {disturbance_time}")  
                 for j in range(disturbance_time, disturbance_time+20):
+                    
                     dist =rbt.forward_dynamics(traj[:2,j:j+1], traj[2:4,j:j+1], traj[4:6,j:j+1], ext_force)
                     #print(f"dist {dist.transpose()}")
                     data[i:i+2,j:j+1] = dist
@@ -54,7 +60,7 @@ def create_dataset(rbt: Robot, start_points:np.ndarray, end_points:np.ndarray, e
             dataset["traj_" + str(point)] = data
             i += 2
             
-    return dataset, disturbance_ground_truth
+    return dataset, disturbance_ground_truth, force_ground_truth
 
 if __name__ == 'main':
     
